@@ -1,0 +1,7 @@
+./llama.cpp/build/bin/llama-cli \
+  -m models/phi35-text2sql-q4.gguf \
+  -c 1024 \
+  -t 1 \
+  -n 64 \
+  -p "Schema: users(id, age). Question: users older than 18."
+

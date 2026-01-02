@@ -1,0 +1,96 @@
+# Virtual Environments
+backend/venv/
+backend/.venv/
+frontend/venv/
+frontend/.venv/
+.venv/
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Models (large files - don't commit)
+models/*.gguf
+models/*.bin
+models/*.safetensors
+*.gguf
+*.bin
+
+# Training outputs (large files)
+trainer_output/
+trainer_output.zip
+merged_model/
+logs/
+
+# llama.cpp build artifacts
+llama.cpp/build/
+llama.cpp/*.o
+llama.cpp/*.so
+llama.cpp/*.dylib
+
+# Log files
+*.log
+llama-server.log
+backend.log
+frontend.log
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Data files (optional - uncomment if you want to keep training data)
+# training_data.jsonl
+# csvjson.json
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# UV/pip
+.python-version
+uv.lock
+pyproject.toml
+
+# PDF exports
+*.pdf
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Streamlit
+.streamlit/
+
+# Backup files
+*.bak
+*.backup
