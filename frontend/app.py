@@ -9,7 +9,6 @@ API_URL = "http://localhost:8000"
 
 st.set_page_config(
     page_title="Text-to-SQL Generator",
-    page_icon="🗄️",
     layout="wide"
 )
 
@@ -43,12 +42,12 @@ def generate_sql(schema: str, question: str, context_length: int = 1024,
     except requests.exceptions.ConnectionError:
         return {
             "success": False,
-            "error": "Cannot connect to API. Make sure the backend is running."
+            "error": "Connection failed. Please ensure the backend service is active."
         }
     except requests.exceptions.HTTPError as e:
         return {
             "success": False,
-            "error": f"HTTP Error: {e.response.status_code} - {e.response.text}"
+            "error": f"HTTP Error {e.response.status_code}: {e.response.text}"
         }
     except Exception as e:
         return {
@@ -56,38 +55,38 @@ def generate_sql(schema: str, question: str, context_length: int = 1024,
             "error": str(e)
         }
 
-# Header
-st.title("🗄️ Text-to-SQL Generator")
-st.markdown("Convert natural language questions into SQL queries using a fine-tuned Phi-3.5 model")
+# Header Section
+st.title("Text-to-SQL Generator")
+st.markdown("Natural language to SQL query generation powered by fine-tuned Phi-3.5 models.")
 
-# Sidebar for settings
+# Sidebar Configuration
 with st.sidebar:
-    st.header("⚙️ Settings")
+    st.header("Configuration")
     
     # API Health Check
-    st.subheader("API Status")
+    st.subheader("System Status")
     is_healthy, health_data = check_api_health()
     
     if is_healthy:
-        st.success("✅ Backend API is running")
-        with st.expander("API Details"):
+        st.success("Backend API: Connected")
+        with st.expander("System Metadata"):
             st.json(health_data)
     else:
-        st.error("❌ Backend API is not available")
-        st.warning("Start the backend with: `uvicorn api:app --reload`")
+        st.error("Backend API: Offline")
+        st.info("To start the service, run: `uvicorn api:app --reload`")
     
     st.divider()
     
     # Model Parameters
-    st.subheader("Model Parameters")
+    st.subheader("Inference Parameters")
     context_length = st.slider("Context Length", 512, 2048, 1024, 128)
-    max_tokens = st.slider("Max Output Tokens", 32, 256, 128, 16)
-    temperature = st.slider("Temperature", 0.0, 1.0, 0.1, 0.05)
+    max_tokens = st.slider("Maximum Output Tokens", 32, 256, 128, 16)
+    temperature = st.slider("Sampling Temperature", 0.0, 1.0, 0.1, 0.05)
     
     st.divider()
     
     # Example Schemas
-    st.subheader("📚 Example Schemas")
+    st.subheader("Schema Templates")
     example_schemas = {
         "E-commerce": "customers(id, name, email), orders(id, customer_id, date, total), products(id, name, price)",
         "HR Database": "employees(id, name, dept_id, salary, hire_date), departments(id, name, manager_id)",
@@ -95,12 +94,12 @@ with st.sidebar:
         "Simple": "users(id, name, age, city)"
     }
     
-    selected_example = st.selectbox("Load Example Schema", ["Custom"] + list(example_schemas.keys()))
+    selected_example = st.selectbox("Select Template", ["Custom"] + list(example_schemas.keys()))
     
     st.divider()
     
     # Example Questions
-    st.subheader("💡 Example Questions")
+    st.subheader("Sample Queries")
     example_questions = [
         "Find all users older than 18",
         "Count total orders by customer",
@@ -109,51 +108,48 @@ with st.sidebar:
         "Show products with price > 100"
     ]
     for q in example_questions:
-        st.caption(f"• {q}")
+        st.caption(f"Query: {q}")
 
-# Main content area
+# Main Interface
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader("📝 Input")
+    st.subheader("Input Specification")
     
     # Schema input
-    if selected_example != "Custom":
-        default_schema = example_schemas[selected_example]
-    else:
-        default_schema = ""
+    default_schema = example_schemas[selected_example] if selected_example != "Custom" else ""
     
     schema = st.text_area(
-        "Database Schema",
+        "Database Schema Definition",
         value=default_schema,
         height=150,
-        placeholder="e.g., users(id, name, age), orders(id, user_id, amount)",
-        help="Describe your database tables and columns"
+        placeholder="Format: table_name(column1, column2)",
+        help="Provide the table structures and column names for context."
     )
     
     # Question input
     question = st.text_area(
-        "Natural Language Question",
+        "Natural Language Query",
         height=100,
-        placeholder="e.g., Find all users who are older than 25",
-        help="Ask your question in plain English"
+        placeholder="Enter your request in English",
+        help="The specific data request you wish to convert to SQL."
     )
     
     # Generate button
-    generate_btn = st.button("🚀 Generate SQL", type="primary", use_container_width=True)
+    generate_btn = st.button("Generate SQL Statement", type="primary", use_container_width=True)
 
 with col2:
-    st.subheader("🎯 Output")
+    st.subheader("Result")
     
     if generate_btn:
         if not schema.strip():
-            st.error("❌ Please provide a database schema")
+            st.error("Action Required: Database schema definition is missing.")
         elif not question.strip():
-            st.error("❌ Please enter a question")
+            st.error("Action Required: Query input is missing.")
         elif not is_healthy:
-            st.error("❌ Backend API is not available. Please start the backend server.")
+            st.error("Service Error: The backend API is currently unreachable.")
         else:
-            with st.spinner("Generating SQL..."):
+            with st.spinner("Processing request..."):
                 result = generate_sql(
                     schema=schema,
                     question=question,
@@ -163,7 +159,7 @@ with col2:
                 )
             
             if result.get("success"):
-                st.success("✅ SQL Generated Successfully!")
+                st.success("Query Generation Complete")
                 
                 # Display SQL with syntax highlighting
                 sql_query = result.get("sql", "")
@@ -171,37 +167,37 @@ with col2:
                 
                 # Copy button
                 st.download_button(
-                    label="📋 Copy SQL",
+                    label="Download SQL File",
                     data=sql_query,
-                    file_name="query.sql",
+                    file_name="generated_query.sql",
                     mime="text/plain"
                 )
                 
                 # Show raw output in expander
-                with st.expander("🔍 View Raw Model Output"):
+                with st.expander("Model Raw Output"):
                     st.text(result.get("raw_output", ""))
                 
             else:
-                st.error(f"❌ Error: {result.get('error', 'Unknown error')}")
+                st.error(f"Generation Error: {result.get('error', 'An unexpected error occurred.')}")
 
-# Footer with batch processing
+# Batch Processing Section
 st.divider()
 
-with st.expander("🔄 Batch Processing"):
-    st.markdown("### Upload multiple questions at once")
+with st.expander("Batch Operations"):
+    st.markdown("### High-Volume Query Processing")
     
     uploaded_file = st.file_uploader(
-        "Upload JSON file with questions",
+        "Upload JSON Batch File",
         type=['json'],
-        help="Format: [{\"schema\": \"...\", \"question\": \"...\"}]"
+        help="Required Format: [{\"schema\": \"...\", \"question\": \"...\"}]"
     )
     
     if uploaded_file:
         try:
             batch_data = json.load(uploaded_file)
-            st.info(f"Loaded {len(batch_data)} questions")
+            st.info(f"File loaded: {len(batch_data)} queries detected.")
             
-            if st.button("Process Batch"):
+            if st.button("Execute Batch Process"):
                 results = []
                 progress_bar = st.progress(0)
                 
@@ -220,7 +216,7 @@ with st.expander("🔄 Batch Processing"):
                     })
                     progress_bar.progress((i + 1) / len(batch_data))
                 
-                st.success("✅ Batch processing complete!")
+                st.success("Batch processing finalized.")
                 
                 # Display results in a table
                 df = pd.DataFrame(results)
@@ -229,23 +225,23 @@ with st.expander("🔄 Batch Processing"):
                 # Download results
                 csv = df.to_csv(index=False)
                 st.download_button(
-                    label="📥 Download Results (CSV)",
+                    label="Download Results (CSV)",
                     data=csv,
-                    file_name="sql_results.csv",
+                    file_name="batch_sql_results.csv",
                     mime="text/csv"
                 )
                 
         except json.JSONDecodeError:
-            st.error("Invalid JSON file")
+            st.error("Error: The uploaded file is not a valid JSON document.")
         except Exception as e:
-            st.error(f"Error processing file: {str(e)}")
+            st.error(f"Processing Error: {str(e)}")
 
 # Footer
 st.divider()
 st.markdown(
     """
-    <div style='text-align: center; color: gray;'>
-        <p>Powered by Phi-3.5-mini fine-tuned with LoRA | Built with Streamlit & FastAPI</p>
+    <div style='text-align: center; color: #6c757d; font-size: 0.8em;'>
+        Implementation: Phi-3.5-mini fine-tuned via LoRA | Framework: Streamlit and FastAPI
     </div>
     """,
     unsafe_allow_html=True
